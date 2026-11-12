@@ -51,10 +51,10 @@ app.post('/api/v1/auth/register', async (req, res) => {
     )
 
     // Ставим куку
-   res.cookie('sessionId', sessionId, {
+  res.cookie('sessionId', sessionId, {
   httpOnly: true,
-  secure: false,          // <--- ДОЛЖНО БЫТЬ false для localhost
-  sameSite: 'lax',        // <--- ДОЛЖНО БЫТЬ 'lax'
+  secure: true,          // Обязательно true для HTTPS
+  sameSite: 'none',      // Обязательно 'none' для разных доменов
   maxAge: 7 * 24 * 60 * 60 * 1000
 })
     res.json({ message: 'Регистрация успешна', user: { id: result.lastInsertRowid, name, email } })
