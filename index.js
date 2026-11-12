@@ -12,8 +12,8 @@ const app = express()
 const PORT = process.env.PORT || 4000
 
 app.use(cors({
-  origin: 'http://localhost:5173', // Точный адрес твоего сайта
-  credentials: true // Разрешаем передачу куки
+  origin: ['http://localhost:5173', 'https://kostya28x.github.io'], // Разрешаем и локальный, и сайт
+  credentials: true
 }))
 
 app.use(express.json())
