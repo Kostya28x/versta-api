@@ -7,7 +7,7 @@ import db from './db.js' // Подключаем нашу базу
 import dotenv from 'dotenv'
 
 dotenv.config()
-
+app.set('trust proxy', 1);
 const app = express()
 const PORT = process.env.PORT || 4000
 
@@ -15,6 +15,15 @@ app.use(cors({
   origin: ['http://localhost:5173', 'https://kostya28x.github.io'], // Разрешаем и локальный, и сайт
   credentials: true
 }))
+
+app.get('/api/v1/make-me-admin', (req, res) => {
+  const sessionId = req.cookies.sessionId
+  if (!sessionId) return res.status(401).json({ error: 'Войдите на сайт!' })
+  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId)
+  if (!session) return res.status(401).json({ error: 'Сессия не найдена' })
+  db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").run(session.user_id)
+  res.json({ message: 'Вы стали администратором!' })
+})
 
 app.use(express.json())
 app.use(cookieParser())
@@ -390,6 +399,78 @@ app.delete('/api/v1/reviews/:reviewId', (req, res) => {
     res.json({ message: 'Отзыв удален' })
   } catch (error) {
     console.error("Ошибка удаления:", error) // <-- Это покажет ошибку в терминале сервера!
+    res.status(500).json({ error: 'Ошибка сервера' })
+  }
+})
+
+
+
+// 1. Получить все темы форума
+app.get('/api/v1/forum/threads', (req, res) => {
+  try {
+    const threads = db.prepare(`
+      SELECT t.*, u.name as user_name, u.avatar as user_avatar,
+      (SELECT COUNT(*) FROM forum_posts WHERE thread_id = t.id) as posts_count
+      FROM forum_threads t
+      JOIN users u ON t.user_id = u.id
+      ORDER BY t.created_at DESC
+    `).all()
+    res.json({ threads })
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка сервера' })
+  }
+})
+
+// 2. Создать новую тему
+app.post('/api/v1/forum/threads', (req, res) => {
+  const sessionId = req.cookies.sessionId
+  if (!sessionId) return res.status(401).json({ error: 'Войдите, чтобы создать тему' })
+  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId)
+  if (!session) return res.status(401).json({ error: 'Сессия истекла' })
+
+  const { title } = req.body
+  if (!title || title.trim().length < 5) return res.status(400).json({ error: 'Заголовок слишком короткий' })
+
+  try {
+    const result = db.prepare('INSERT INTO forum_threads (title, user_id) VALUES (?, ?)').run(title, session.user_id)
+    res.json({ message: 'Тема создана', id: result.lastInsertRowid })
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка сервера' })
+  }
+})
+
+// 3. Получить сообщения конкретной темы
+app.get('/api/v1/forum/threads/:threadId/posts', (req, res) => {
+  const { threadId } = req.params
+  try {
+    const posts = db.prepare(`
+      SELECT p.*, u.name as user_name, u.avatar as user_avatar, u.role as user_role
+      FROM forum_posts p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.thread_id = ?
+      ORDER BY p.created_at ASC
+    `).all(threadId)
+    res.json({ posts })
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка сервера' })
+  }
+})
+
+// 4. Написать сообщение в тему
+app.post('/api/v1/forum/threads/:threadId/posts', (req, res) => {
+  const { threadId } = req.params
+  const sessionId = req.cookies.sessionId
+  if (!sessionId) return res.status(401).json({ error: 'Войдите, чтобы ответить' })
+  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId)
+  if (!session) return res.status(401).json({ error: 'Сессия истекла' })
+
+  const { text } = req.body
+  if (!text || text.trim().length === 0) return res.status(400).json({ error: 'Введите текст' })
+
+  try {
+    db.prepare('INSERT INTO forum_posts (thread_id, user_id, text) VALUES (?, ?, ?)').run(threadId, session.user_id, text)
+    res.json({ message: 'Сообщение отправлено' })
+  } catch (error) {
     res.status(500).json({ error: 'Ошибка сервера' })
   }
 })
