@@ -6,14 +6,15 @@ import { randomUUID } from 'crypto'
 import db from './db.js' // Подключаем нашу базу
 import dotenv from 'dotenv'
 const app = express()
-
-dotenv.config()
 app.set('trust proxy', 1);
+dotenv.config()
 
-const PORT = process.env.PORT || 4000
+
+
+const PORT = process.env.PORT || 8080;
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://kostya28x.github.io', 'https://versta-app.de2.netrun.io'], // Разрешаем и локальный, и сайт
+  origin: ['http://localhost:5173', 'https://versta-app.de2.netrun.io'],
   credentials: true
 }))
 
