@@ -5,10 +5,11 @@ import bcrypt from 'bcrypt'
 import { randomUUID } from 'crypto'
 import db from './db.js' // Подключаем нашу базу
 import dotenv from 'dotenv'
+const app = express()
 
 dotenv.config()
 app.set('trust proxy', 1);
-const app = express()
+
 const PORT = process.env.PORT || 4000
 
 app.use(cors({
