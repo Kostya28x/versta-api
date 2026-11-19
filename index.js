@@ -13,7 +13,7 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 4000
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://kostya28x.github.io'], // Разрешаем и локальный, и сайт
+  origin: ['http://localhost:5173', 'https://kostya28x.github.io', 'https://versta-app.de2.netrun.io'], // Разрешаем и локальный, и сайт
   credentials: true
 }))
 
