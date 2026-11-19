@@ -476,8 +476,8 @@ app.post('/api/v1/forum/threads/:threadId/posts', (req, res) => {
   }
 })
 
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на http://localhost:${PORT}`)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Сервер запущен на http://0.0.0.0:${PORT}`)
 })
 
 // Получить избранное любого пользователя
