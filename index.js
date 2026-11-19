@@ -14,7 +14,11 @@ dotenv.config()
 const PORT = process.env.PORT || 8080;
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://versta-app.de2.netrun.io'],
+  origin: [
+    'http://localhost:5173',
+    'https://kostya28x.github.io',          // <-- Твой сайт на GitHub Pages
+    'https://versta-app.de2.netrun.io'     // <-- На случай, если сайт откроют через Netrun
+  ],
   credentials: true
 }))
 
