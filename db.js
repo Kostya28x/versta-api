@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3'
 
-const db = new Database('versta.db')
+const db = new Database(process.env.DATABASE_PATH || 'versta.db')
 db.pragma('journal_mode = WAL')
 
 db.exec(`
